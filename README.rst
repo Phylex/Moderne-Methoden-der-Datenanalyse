@@ -17,7 +17,7 @@ Ausfuehren der Scripte
 Die meisten Scripte sind ausfuehrbar, unter der Bedingung, dass sie auf einem Unixoiden OS ausgefuehrt werden und
 sich eine Python instanz unter :code:`/usr/lib/python3` befindet fuer welche die noetigen Packete installiert wurden.
 
-.. _Pyhton3: https://www.python.org
+.. _Python3: https://www.python.org
 .. _numpy: https://numpy.org
 .. _matplotlib: https://matplotlib.org
 .. _Root: https://root.cern.ch
