@@ -15,11 +15,14 @@ def bin_centers(bin_edges):
         return (bin_edges[1:] + bin_edges[:-1])/2
     return [(bin_edges[i]+edge)/2 for i, edge in enumerate(bin_edges[1:])]
 
+<<<<<<< HEAD
 def find_nearest(array, value):
     """find the value that is nearest to a given value in an array"""
     array = np.asarray(array)
     idx = (np.abs(array-value)).argmin()
     return array[idx], idx
+=======
+>>>>>>> 5b4d335ead37b4b7f636f49489570eedae939e78
 
 def generate_pdf_rnums_rejection_method(num, pdf, bounds, *args):
     """generate random numbers following the pdf given for
