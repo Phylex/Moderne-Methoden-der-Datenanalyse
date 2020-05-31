@@ -8,6 +8,19 @@
 """
 import numpy as np
 
+def bin_centers(bin_edges):
+    """calculate the bin centers given the list of bin edges as returned by
+    `np.histogram` or `plt.hist` functions"""
+    if isinstance(bin_edges, np.ndarray):
+        return (bin_edges[1:] + bin_edges[:-1])/2
+    return [(bin_edges[i]+edge)/2 for i, edge in enumerate(bin_edges[1:])]
+
+def find_nearest(array, value):
+    """find the value that is nearest to a given value in an array"""
+    array = np.asarray(array)
+    idx = (np.abs(array-value)).argmin()
+    return array[idx], idx
+
 def generate_pdf_rnums_rejection_method(num, pdf, bounds, *args):
     """generate random numbers following the pdf given for
     pdf(*args) using the rejection method and transform the area according tho the pdf"""
@@ -23,7 +36,6 @@ def generate_pdf_rnums_rejection_method(num, pdf, bounds, *args):
             transformed_rnums.append(coordinate[0])
             count += 1
     return transformed_rnums, rgen
-
 
 def transform_to_exp_decay(urnums, theta):
     """transforms uniformally distributed random numbers to random numbers
@@ -43,3 +55,4 @@ def statistical_integrate_1D(func, bounds, *params):
     delta_b = bounds[1]-bounds[0]
     data, rlen = generate_pdf_rnums_rejection_method(int(delta_b*1000), func, bounds, *params)
     return len(data)/rlen
+
