@@ -8,6 +8,14 @@
 """
 import numpy as np
 
+def bin_centers(bin_edges):
+    """calculate the bin centers given the list of bin edges as returned by
+    `np.histogram` or `plt.hist` functions"""
+    if isinstance(bin_edges, np.ndarray):
+        return (bin_edges[1:] + bin_edges[:-1])/2
+    return [(bin_edges[i]+edge)/2 for i, edge in enumerate(bin_edges[1:])]
+
+
 def generate_pdf_rnums_rejection_method(num, pdf, bounds, *args):
     """generate random numbers following the pdf given for
     pdf(*args) using the rejection method and transform the area according tho the pdf"""
