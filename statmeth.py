@@ -48,11 +48,10 @@ def numerical_integrate_1D(func, bounds, *params):
     delta_b = np.abs(bounds[1]-bounds[0])
     domain = np.linspace(bounds[0], bounds[1], int(delta_b*1000))
     delta_x = domain[1:] - domain[:-1]
-    return sum((func(domain[:-1], *params) + func(domain[1:], *params))/2 + delta_x)
+    return sum((func(domain[:-1], *params) + func(domain[1:], *params))/2 * delta_x)
 
 def statistical_integrate_1D(func, bounds, *params):
     """use the statistical method to integrate f"""
     delta_b = bounds[1]-bounds[0]
     data, rlen = generate_pdf_rnums_rejection_method(int(delta_b*1000), func, bounds, *params)
     return len(data)/rlen
-
