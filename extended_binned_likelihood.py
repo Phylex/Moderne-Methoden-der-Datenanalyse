@@ -11,8 +11,6 @@ import scipy.special as sps
 import statmeth as stm
 import statplot as stp
 
-
-
 #the model used to be fitted to the data is described
 def signal(x, theta):
     """Gaussian function representing the signal with theta being the
@@ -48,47 +46,67 @@ def create_parameter_scan(params, scan_idx, scan_bounds, var_num):
     return list(zip(*scan_params))
 
 #the extended binned log likelihood function as defined in the lectures
-def extended_binned_log_likelihood(hist, bin_edges, model_func, *params):
+def extended_binned_log_likelihood(hist, bin_edges, model_func, expected_count, *params):
     """compute the extended binned log likelyhood given a histogram and its bin edges
     as well as the model function that along with a single variable takes parameters *params"""
+    #here we use the model function to calculate the probability that
+    #an event will be sortet into the ith bin
     bin_centers = np.array(stm.bin_centers(bin_edges))
+    bin_widths = bin_edges[1:] - bin_edges[:-1]
+    bin_area = model_func(bin_centers, *params) * bin_widths
+    total_area = sum(bin_area)
     #probability that a measurement gets sorted into the kth bin
     #approximated using the probability at the center of the bin.
-    nu_k = model_func(bin_centers, *params)
-    #the sps.gamma function is an way to write the factorial of a number
-    #the stirling approximation could be used to calculate ln(n!) quicker
-    #for large n but a test should probably be put in here then
-    return sum(-nu_k -np.log(sps.gamma(hist+1)) + hist * np.log(nu_k))
+    prob_bin = bin_area / total_area
+    #calculate the expected entries into the ith bin
+    nu_i = expected_count * prob_bin
+    return sum(-nu_i + hist * np.log(nu_i))
 
 if __name__ == "__main__":
     #set the parameters for the data
     BOUNDS = (0, 10)
-    N = 100000
+    N = 4500
     params = (1, 0.25, 0.1, 5)
-    BIN_COUNT = 25
+    BIN_COUNT = 20
     #create the histogram of the data
     data = create_pseudo_experiment_data(N, BOUNDS, params)
-    hist, bin_edges = np.histogram(data, BIN_COUNT, density=True)
+    hist, bin_edges = np.histogram(data, BIN_COUNT, density=False)
 
-    #rescale model scaling to fit the data scaling
-    model_integral = stm.numerical_integrate_1D(model, BOUNDS, *params)
-    hist_integral = sum(hist)
-    bin_width = bin_edges[1] - bin_edges[0] #assuming uniform spacing
-    scale = hist_integral / model_integral * bin_width
-    model_params = (params[0]*scale, params[1], params[2]*scale, params[3])
+    #plot the variation of the amplitude of the signal
+    scan_vals = np.linspace(0, .5, 6, endpoint=True)
+    scan_idx = 2
+    scale_dependent_params = [0, 2]
+    fitted_params = params
+    stp.plot_parameter_variation_over_errorbar(hist, bin_edges, model, fitted_params,
+                                               scale_dependent_params, scan_idx, scan_vals,
+                                               color='blue-green', param_name=r'\lambda',
+                                               title='Variation of signal amplitude')
 
-    #do a parameter scan of the signal strength with the ebnll
+    #plot the variation of the position of the signal
+    scan_vals = np.linspace(4, 6, 5, endpoint=True)
+    scan_idx = 3
+    stp.plot_parameter_variation_over_errorbar(hist, bin_edges, model, fitted_params,
+                                               scale_dependent_params, scan_idx, scan_vals,
+                                               color='red-yellow', param_name=r'\eta',
+                                               title='Variarion of signal position')
+
+    #set common scan parameters
     scan_points = 100
-    scan_bounds = (0.05, .8)
-    scan_params = create_parameter_scan(model_params, 2, scan_bounds, scan_points)
-    sig_strength_ebnnl = [-extended_binned_log_likelihood(hist, bin_edges, model, *scan_param)
+    #do a parameter scan of the signal strength with the ebnll
+    scan_bounds = (0.01, .2)
+    scan_params = create_parameter_scan(params, 2, scan_bounds, scan_points)
+    sig_strength_ebnnl = [-extended_binned_log_likelihood(hist, bin_edges, model, N, *scan_param)
                           for scan_param in scan_params]
-
-    #plot the maximum likelihood scan
+    #plot the maximum likelihood scan for the amplitude
     scan_domain = list(zip(*scan_params))[2]
-    stp.plot_likelihood_scan_1D(sig_strength_ebnnl, scan_domain, '\lambda')
+    stp.plot_likelihood_scan_1D(sig_strength_ebnnl, scan_domain, r'\lambda',
+                                plot_delta=True, palette='blue-green', title='Signal amplitude scan')
 
-    #plot the results
-    bin_centers = stm.bin_centers(bin_edges)
-    plt.hist(data, 100)
-    plt.show()
+    #plot the maximum likelihood scan for the position
+    scan_bounds = (4, 6)
+    scan_params = create_parameter_scan(params, 3, scan_bounds, scan_points)
+    sig_position_ebnnl = [-extended_binned_log_likelihood(hist, bin_edges, model, N, *scan_param)
+                          for scan_param in scan_params]
+    scan_domain = list(zip(*scan_params))[3]
+    stp.plot_likelihood_scan_1D(sig_position_ebnnl, scan_domain, r'\eta',
+                                plot_delta=True, palette='red-yellow', title='Signal position scan')
