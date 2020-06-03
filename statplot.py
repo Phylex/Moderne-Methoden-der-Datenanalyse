@@ -68,7 +68,7 @@ def plot_likelihood_scan_1D(scan_vals, scan_domain, parameter_name, title='Likel
 
 def plot_parameter_variation_over_errorbar(hist, bin_edges, model, fitted_params,
                                            scale_dependent_params, var_param_idx, var_vals,
-                                           param_name=r'\theta', color='blue-green', density=False,
+                                           param_name=r'\theta', color='blue-green',
                                            save=False, title='Variation of a parameter'):
     """plots a sequence of functions where the parameter indicated by `var_param_idx` is run
     through all values in `var_vals` while all other parameters stay unchanged (set to the
@@ -109,7 +109,71 @@ def plot_parameter_variation_over_errorbar(hist, bin_edges, model, fitted_params
                  linestyle='', label='Events')
     #draw the supplemental information
     plt.grid(linestyle=':')
-    plt.title(r'Variation of $'+param_name+'$')
+    plt.title(title)
     plt.legend()
-    plt.savefig('variation_of_param_'+param_name+'.svg')
+    if save:
+        plt.savefig('variation_of_param_'+param_name+'.svg')
     plt.show()
+
+def plot_param_variation_1D(func, param_sets, plot_bounds, legend=True, labels=None,
+                            var_var_name=None, var_var_idx=None, palette='blue-green', title=None,
+                            axis=None):
+    """Plot the function given py func once for every parameter set given in param_sets.
+    The domain of the plot is bounded by plot_bounds. The curves are assigned a label
+    from labels if labels is not none. labels has to be a list of labels with the same
+    length as the list of param sets. If a descriptive label is not needed the name of
+    the parameter can be given that is varied (in param sets) and a label will be
+    automatically generated (this only works when one parameter is varied. If both
+    Labels and var_var_name are None and the length of the parameter set is smaller
+    than 7 every parameter is given a generic name and printed in the legend with
+    the value of the corresponding parameter. The legend can be disabled with
+    legend=False.
+    """
+    #set up the axes if none where passed in, otherwis use the given one
+    if axis is None:
+        fig = plt.figure(figsize=(10,10))
+        ax = fig.add_subplot(111)
+    else:
+        ax = axis
+    #color for the diffent curves
+    color = itt.cycle(PALETTS[palette])
+    #build the labels
+    if legend and labels is None:
+        #autogenerate labels
+        if var_var_name is None:
+            if len(param_sets[0]) < 7:
+                labels = []
+                for param_set in param_sets:
+                    base_label = r'$\theta_{} = {:.3f}$ '
+                    label = ''
+                    for i, param in enumerate(param_set):
+                        label += base_label.format(i, float(param))
+                    labels.append(label)
+            else:
+                labels = [None for param_set in param_sets]
+        #generate labels from the parameter name
+        else:
+            if var_var_idx is not None:
+                base_label = r'$'+var_var_name+' = {:.3f}$'
+                labels = []
+                for param_set in param_sets:
+                    label = base_label.format(param_set[var_var_idx])
+                    labels.append(label)
+            else:
+                labels = [None for param_set in param_sets]
+    #prepare the domain of the plot
+    delta_bounds = plot_bounds[1]-plot_bounds[0]
+    domain = np.linspace(plot_bounds[0], plot_bounds[1], delta_bounds*1000)
+    #calculate the curves
+    curves = [func(domain, *param_set) for param_set in param_sets]
+    #plot the curves
+    for curve, label, cur_col in zip(curves, labels, color):
+        ax.plot(domain, curve, label=label, color=cur_col)
+    #make the plot look nice
+    if legend:
+        ax.legend()
+    if title is not None:
+        ax.set_title(title)
+    ax.grid()
+    if axis is None:
+        return fig, ax
