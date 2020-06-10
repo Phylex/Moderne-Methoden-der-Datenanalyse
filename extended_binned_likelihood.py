@@ -80,7 +80,7 @@ if __name__ == "__main__":
     stp.plot_parameter_variation_over_errorbar(hist, bin_edges, model, fitted_params,
                                                scale_dependent_params, scan_idx, scan_vals,
                                                color='blue-green', param_name=r'\lambda',
-                                               title='Variation of signal amplitude')
+                                               title='Variation of signal amplitude', save=True)
 
     #plot the variation of the position of the signal
     scan_vals = np.linspace(4, 6, 5, endpoint=True)
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     stp.plot_parameter_variation_over_errorbar(hist, bin_edges, model, fitted_params,
                                                scale_dependent_params, scan_idx, scan_vals,
                                                color='red-yellow', param_name=r'\eta',
-                                               title='Variarion of signal position')
+                                               title='Variarion of signal position', save=True)
 
     #set common scan parameters
     scan_points = 100
