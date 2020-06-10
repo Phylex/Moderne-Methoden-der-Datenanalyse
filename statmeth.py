@@ -42,13 +42,11 @@ def transform_to_exp_decay(urnums, theta):
     with a distribution following an exponential decay"""
     return -theta * np.log(theta*urnums)
 
-def numerical_integrate_1D(func, bounds, *params):
+def numerical_integrate_1D(func, domain, *params):
     """numerically integrate the function f(x, *params) inside the
     interval given by bounds using the trapezoidal method"""
-    delta_b = np.abs(bounds[1]-bounds[0])
-    domain = np.linspace(bounds[0], bounds[1], int(delta_b*1000))
     delta_x = domain[1:] - domain[:-1]
-    return sum((func(domain[:-1], *params) + func(domain[1:], *params))/2 * delta_x)
+    return sum((func(domain, *params)[:-1]+ func(domain, *params)[1:])/2 * delta_x)
 
 def statistical_integrate_1D(func, bounds, *params):
     """use the statistical method to integrate f"""

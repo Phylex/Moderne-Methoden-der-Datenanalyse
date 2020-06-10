@@ -85,7 +85,8 @@ def plot_parameter_variation_over_errorbar(hist, bin_edges, model, fitted_params
     hist_int = sum(hist*bin_width)
     #now determin the integral of the model
     bounds = (min(bin_edges), max(bin_edges))
-    model_int = stm.numerical_integrate_1D(model, bounds, *fitted_params)
+    int_steps = np.linspace(bounds[0], bounds[1], int(1000*(bounds[1]-bounds[0])))
+    model_int = stm.numerical_integrate_1D(model, int_steps, *fitted_params)
     #the scale is defined as the ratio of the areas
     scale = hist_int / model_int
     #prepare variables for the plot
